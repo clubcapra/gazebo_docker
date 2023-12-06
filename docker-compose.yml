@@ -1,14 +1,12 @@
 version: '3'
 services:
   gazebo:
+    image: ghcr.io/clubcapra/gazebo:latest
     build:
       context: .
       dockerfile: Dockerfile
-    environment:
-      - DISPLAY
-      - QT_X11_NO_MITSHM
-      - XAUTHORITY
-      - ROS_DOMAIN_ID=0
+    env_file:
+      - .env
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
       - /tmp/.Xauthority:/tmp/.Xauthority:rw
