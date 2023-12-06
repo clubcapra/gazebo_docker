@@ -54,15 +54,6 @@ RUN cd ~/workspace/src/ros_gz/ && git checkout $ROS_DISTRO
 RUN /bin/bash -c '. /opt/ros/${ROS_DISTRO}/setup.bash; cd ~/workspace; colcon build --cmake-args -DBUILD_TESTING=OFF --symlink-install --merge-install'
 
 
-# COPY rove_description for pre-installation
-COPY . /root/workspace/src/rove_description
-
-# Build the rove_description ROS packages
-RUN /bin/bash -c '. /opt/ros/${ROS_DISTRO}/setup.bash; cd ~/workspace; colcon build --symlink-install --packages-select rove_description --merge-install'
-
-# Create symbolic links for the world files
-RUN ln -sf /root/workspace/src/rove_description/worlds/base_world.world /root/workspace/install/share/rove_description/worlds/base_world.world
-
 # Create entrypoint
 RUN echo '#!/bin/bash \n\
     source /opt/ros/${ROS_DISTRO}/setup.bash \n\
