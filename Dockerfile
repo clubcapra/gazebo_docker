@@ -24,11 +24,11 @@ RUN curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sud
 RUN apt update -y
 
 # Create workspace and source directories
-RUN mkdir -p ~/workspace/src
+RUN mkdir -p /gazebo/gazebo_ws/src
 
 # Import the collection of repositories including Gazebo
-RUN cd ~/workspace/src && wget https://raw.githubusercontent.com/ignition-tooling/gazebodistro/master/collection-fortress.yaml
-RUN cd ~/workspace/src && vcs import < collection-fortress.yaml
+RUN cd /gazebo/gazebo_ws/src && wget https://raw.githubusercontent.com/ignition-tooling/gazebodistro/master/collection-fortress.yaml
+RUN cd /gazebo/gazebo_ws/src && vcs import < collection-fortress.yaml
 
 # Add OSRF packages keyring and repository
 RUN wget https://packages.osrfoundation.org/gazebo.gpg -O /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg
@@ -36,7 +36,7 @@ RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/p
 RUN apt-get update
 
 # Install Gazebo dependencies
-RUN cd ~/workspace/src && apt -y install \
+RUN cd /gazebo/gazebo_ws/src && apt -y install \
   $(sort -u $(find . -iname 'packages-'`lsb_release -cs`'.apt' -o -iname 'packages.apt' | grep -v '/\.git/') | sed '/ignition\|sdf/d' | tr '\n' ' ')
 
 # Install Dart 6.13 (remove default version and install new one)
@@ -47,17 +47,19 @@ RUN apt-get install libdart6-all-dev -y
 
 
 # Get ros_gz
-RUN cd ~/workspace/src/ && git clone https://github.com/gazebosim/ros_gz.git
-RUN cd ~/workspace/src/ros_gz/ && git checkout $ROS_DISTRO
+RUN cd /gazebo/gazebo_ws/src/ && git clone https://github.com/gazebosim/ros_gz.git
+RUN cd /gazebo/gazebo_ws/src/ros_gz/ && git checkout $ROS_DISTRO
 
 # Build the ROS gz packages
-RUN /bin/bash -c '. /opt/ros/${ROS_DISTRO}/setup.bash; cd ~/workspace; colcon build --cmake-args -DBUILD_TESTING=OFF --symlink-install --merge-install'
+RUN /bin/bash -c '. /opt/ros/${ROS_DISTRO}/setup.bash; cd /gazebo/gazebo_ws; colcon build --cmake-args -DBUILD_TESTING=OFF --symlink-install --merge-install'
 
+# Install velodyne simulator
+RUN cd /gazebo/gazebo_ws/src/ && git clone 
 
 # Create entrypoint
 RUN echo '#!/bin/bash \n\
     source /opt/ros/${ROS_DISTRO}/setup.bash \n\
-    source /root/workspace/install/setup.bash \n\
+    source /gazebo/gazebo_ws/install/setup.bash \n\
     exec "$@"' > /ros_entrypoint.sh
 
 # Set entrypoint and default command
