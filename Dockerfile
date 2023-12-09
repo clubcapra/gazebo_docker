@@ -53,9 +53,6 @@ RUN cd /gazebo/gazebo_ws/src/ros_gz/ && git checkout $ROS_DISTRO
 # Build the ROS gz packages
 RUN /bin/bash -c '. /opt/ros/${ROS_DISTRO}/setup.bash; cd /gazebo/gazebo_ws; colcon build --cmake-args -DBUILD_TESTING=OFF --symlink-install --merge-install'
 
-# Install velodyne simulator
-RUN cd /gazebo/gazebo_ws/src/ && git clone 
-
 # Create entrypoint
 RUN echo '#!/bin/bash \n\
     source /opt/ros/${ROS_DISTRO}/setup.bash \n\
