@@ -3,7 +3,7 @@ FROM ros:humble-ros-base
 
 # Set environment variables
 ENV ROS_DISTRO=humble
-ENV GZ_VERSION=fortress
+ENV GZ_VERSION=harmonic
 
 # Install necessary packages for Gazebo Garden and its dependencies
 RUN apt-get update && apt-get install -y \
@@ -26,29 +26,19 @@ RUN apt update -y
 # Create workspace and source directories
 RUN mkdir -p /gazebo/gazebo_ws/src
 
-# Import the collection of repositories including Gazebo
-RUN cd /gazebo/gazebo_ws/src && wget https://raw.githubusercontent.com/ignition-tooling/gazebodistro/master/collection-fortress.yaml
-RUN cd /gazebo/gazebo_ws/src && vcs import < collection-fortress.yaml
-
 # Add OSRF packages keyring and repository
 RUN wget https://packages.osrfoundation.org/gazebo.gpg -O /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg
 RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null
 RUN apt-get update
 
-# Install Gazebo dependencies
-RUN cd /gazebo/gazebo_ws/src && apt -y install \
-  $(sort -u $(find . -iname 'packages-'`lsb_release -cs`'.apt' -o -iname 'packages.apt' | grep -v '/\.git/') | sed '/ignition\|sdf/d' | tr '\n' ' ')
-
-# Install Dart 6.13 (remove default version and install new one)
-RUN apt remove libdart* -y
-RUN add-apt-repository ppa:dartsim/ppa -y
-RUN apt-get update -y
-RUN apt-get install libdart6-all-dev -y
-
+# Install Gazebo
+RUN apt-get install -y gz-harmonic
 
 # Get ros_gz
-RUN cd /gazebo/gazebo_ws/src/ && git clone https://github.com/gazebosim/ros_gz.git
-RUN cd /gazebo/gazebo_ws/src/ros_gz/ && git checkout $ROS_DISTRO
+RUN cd /gazebo/gazebo_ws/src/ && git clone https://github.com/gazebosim/ros_gz.git -b $ROS_DISTRO
+
+# Install dependencies
+RUN cd /gazebo/gazebo_ws && rosdep install -r --from-paths src -i -y --rosdistro humble
 
 # Build the ROS gz packages
 RUN /bin/bash -c '. /opt/ros/${ROS_DISTRO}/setup.bash; cd /gazebo/gazebo_ws; colcon build --cmake-args -DBUILD_TESTING=OFF --symlink-install --merge-install'
