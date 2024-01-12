@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+      - fortress
+      - harmonic
 
 jobs:
   build_and_push:
@@ -25,6 +27,7 @@ jobs:
 
     - name: Build and push Docker image
       run: |
-        IMAGE_NAME=ghcr.io/${{ github.repository_owner }}/gazebo:latest
+        BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | sed 's/[^a-zA-Z0-9._-]/-/g')
+        IMAGE_NAME=ghcr.io/${{ github.repository_owner }}/gazebo:${BRANCH_NAME}
         docker build -t $IMAGE_NAME .
         docker push $IMAGE_NAME
